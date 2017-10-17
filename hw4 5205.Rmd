@@ -1,0 +1,26 @@
+---
+title: "Untitled"
+author: "Peiru Wu"
+date: "October 21, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+HW4 Q8：
+```{r cars}
+housing<-read.csv("Housing.csv")
+str(housing)
+head(housing)
+#(a)
+for (i in 1:5) {
+  mean(housing$price[housing$bedrooms==i])
+}
+mean(housing$price[housing$bedrooms==1])
+#(b)
+
+```

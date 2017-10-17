@@ -1,0 +1,110 @@
+---
+title: "5205_HW6_Q4"
+author: "Peiru Wu(pw2427)"
+date: "November 4, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+setwd("/Users/peiruwu/Documents/5205")
+house_m<-read.csv("GR5205Midtermdata.csv",header = T,as.is = T)
+head(house_m)
+sort.list(house_m$year_s)
+#a_inflation is as following:
+CPI <- read.csv("cpiu-long.csv",header = T)
+cpi.vec.ym <- CPI$X.2[!is.na(CPI$X.2)]
+year.month.vec <- CPI$X[!is.na(CPI$X.2)]
+m<-length(cpi.vec.ym)
+cpi.vec<-c()
+year.vec<-c(1913:2016)
+for (i in 1913:2016){
+  cpi.temp<-c()
+  for(j in 1:m){
+    if (year.month.vec[j]==i){
+    cpi.temp<-append(cpi.temp,cpi.vec.ym[j])
+  }}
+    cpi.vec<-append(cpi.vec,mean(cpi.temp))
+}
+inflation<-lm(cpi.vec~year.vec)$coefficients[2]
+#deflation price is as following:
+house_m$de_p<-house_m$p*inflation^(house_m$year_s-2000)
+```
+#b
+```{r}
+
+plot(x=house_m$size,y=house_m$p)
+abline(lm(house_m$p~house_m$size))
+max(house_m$p-lm(house_m$p~house_m$size)$coefficients[2]*house_m$year_s-lm(house_m$p~house_m$size)$coefficients[1])
+#the max error is 1044016, we may miss predictors,for example,the style
+```
+#c
+```{r}
+house_m$style<-as.factor(house_m$style)
+levels(house_m$style)
+mean(house_m$p[house_m$style=="cape"])
+mean(house_m$p[house_m$style=="colonial"])
+mean(house_m$p[house_m$style=="cottage"])
+mean(house_m$p[house_m$style=="old"])
+mean(house_m$p[house_m$style=="ranch"])
+mean(house_m$p[house_m$style=="tudor"])
+mean(house_m$p[house_m$style=="victorian"])
+lm(house_m$p[house_m$style=="cape"]~house_m$size[house_m$style=="cape"])
+plot(x=house_m$size[house_m$style=="cape"],y=house_m$p[house_m$style=="cape"])
+plot(x=house_m$size[house_m$style=="colonial"],y=house_m$p[house_m$style=="colonial"])
+plot(x=house_m$size[house_m$style=="cottage"],y=house_m$p[house_m$style=="cottage"])
+#since we can not see the good correlation after we seperate different styles,so the conclusion could be better.
+```
+d
+```{r}
+lm(house_m$p~house_m$q1)
+#in the model ,beta0 is positive ,beta1 and beta2 is negative
+```
+e
+```{r}
+#things could go wrong because we could have predictors corelated with each other
+```
+f
+```{r}
+
+```
+Hedonic.csv contains the following variables (variables names are
+
+listed in the first row).  Unless indicated otherwise, variables
+
+are numeric.
+
+
+
+p                  Sale price
+
+lot                Lot size
+
+style     str16    Building style
+
+year_b             Year Built
+
+size               Living space
+
+room               Number of rooms
+
+bed                Number of bedrooms
+
+bath               Number of bathrooms
+
+q1        str16    Quality: interior condition
+
+q2        str15    Quality: bathrooms condition
+
+year_s             Year of sale
+
+id                 House code

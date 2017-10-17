@@ -1,0 +1,292 @@
+---
+title: "5205_takehomefinal"
+author: "Peiru Wu"
+date: "December 3, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+setwd("/Users/peiruwu/Desktop/1")
+test<-read.csv("test.csv",header = T)
+training<-read.csv("training.csv",header = T)
+attach(training)
+head(test)
+nrow(training)
+test$date<-test$date
+max(test$price)
+min(test$price)
+lm(price~sqft_living)
+```
+(a)
+```{r}
+#let us find the five coefficients from 12
+pairs(~price+sqft_living+sqft_lot+yr_built+lat+long,data = training,upper.panel=NULL)
+par(mfrow=c(1,2))
+plot(sqft_living,price)#seems right
+boxplot(price~bedrooms,xlab="bedrooms")#seems good
+boxplot(price~bathrooms,xlab="bathrooms")#seens good
+plot(sqft_lot,price)
+boxplot(price~floors,xlab="floors")
+boxplot(price~waterfront,xlab="waterfront")#seems good
+boxplot(price~view,xlab="view")
+boxplot(price~condition,xlab="condition")
+boxplot(price~grade,xlab="grade")#good
+plot(yr_built,price)#very ugly
+plot(lat,price)#drop immediately
+plot(long,price)#drop immediately
+#we will choose sqft_living,bedrooms,bathrooms,grade and waterfront, the reason is as following:
+#Look at the above scatter plots and box plots, we would choose bedrooms,
+#bathrooms, sqft_living, view and grade these 5 predictors. 
+#As there are relatively obviously linear relationships between all of bedrooms,
+#bathrooms, sqft_living and price, and the boxplots of view and grade also show
+#that price change with different levels of view and grade.
+```
+(b)
+```{r}
+par(mfrow=c(1,1))
+plot(sqft_living,price)
+#the model is not correct because from the above scatter plot at least one
+#of the error term assumptions is not satisfied by looking at the plot, 
+#that is the constant variance, it can be found that the spread of points 
+#are getting larger with increasing of x-axis.
+```
+(c)
+```{r}
+value <- tapply(price, bathrooms, mean)
+n_bathrooms <- as.numeric(names(value))
+
+lm(value~n_bathrooms)
+plot(n_bathrooms,value,type = "p")#Plot these average prices in terms of the number of bathrooms
+curve(-160525+423546*x,add = T,col="red")
+#fit a linear model to this graph.
+fit1 = lm(value ~ n_bathrooms + I(n_bathrooms^2))
+lines(n_bathrooms, fitted(fit1),col="blue")
+# We add a squared of bathrooms into the linear model and the plot shows the fitness is better.
+```
+(d)
+```{r}
+model1<-lm(price~sqft_living,data = training)
+model2<-lm(log(price)~log(sqft_living),data = training)
+#i
+plot(sqft_living,price)
+curve(-58066.3+288.1*x,add = T,col="red")
+plot(log(sqft_living),log(price))
+curve(model2$coefficients[1]+model2$coefficients[2]*x,add = T,col="red")
+# The important differences are the linear relationship is more stronger 
+#in the model2 plot, so i will pick log-log equation and use 
+#least squares to estimate the regression coefficients.
+
+#ii
+summary(model1)
+summary(model2)
+sse1<-sum((price-(model1$fitted.values))^2)
+sse2<-sum((log(price)-(model2$fitted.values))^2)
+ymean_1<-mean(price)
+ymean_2<-mean(log(price))
+ssto1<-sum((price-ymean_1)^2)
+ssto2<-sum((log(price)-ymean_2)^2)
+r_square1<-1-sse1/ssto1
+r_square2<-1-sse2/ssto2
+#R-squared for model 1 is 0.49133, for model 2 is 0.45313,
+#just the same as is shown is summary.
+
+#iii
+test<-read.csv("test.csv",header = T)
+head(test)
+par(mfrow=c(1,2))
+plot(test$sqft_living,test$price)
+curve(-58066.3+288.1*x,add = T,col="red")#seems fine
+plot(log(test$sqft_living),log(test$price))
+curve(model2$coefficients[1]+model2$coefficients[2]*x,add = T,col="red")#seems fine
+mse1<-mean((test$price-predict(model1,test))^2)
+mse2<-mean((log(test$price)-exp(predict(model2,test)))^2)
+mse1
+mse2
+min(mse1,mse2)
+# As here we have the testing data, we only need to make predictions
+#on testing data. and compute the MSEs, it can be found that
+#the MSE of model 1 is lower than MSE of model 2, so model 1 is better
+#in prediction performance.
+```
+(e)
+```{r}
+m1 = lm(log(price) ~ bedrooms)
+m2 = lm(log(price) ~ bathrooms)
+m3 = lm(log(price) ~ log(sqft_living))
+m4 = lm(log(price) ~ log(sqft_lot))
+m5 = lm(log(price) ~ floors)
+m6 = lm(log(price) ~ waterfront)
+m7 = lm(log(price) ~ view)
+m8 = lm(log(price) ~ condition)
+m9 = lm(log(price) ~ grade)
+m10 = lm(log(price) ~ yr_built)
+m11 = lm(log(price) ~ lat)
+m12 = lm(log(price) ~ long)
+summary(m1)
+AIC(m1)
+summary(m2)
+AIC(m2)
+summary(m3)
+AIC(m3)
+summary(m4)
+AIC(m4)
+summary(m5)
+AIC(m5)
+summary(m6)
+AIC(m6)
+summary(m7)
+AIC(m7)
+summary(m8)
+AIC(m8)
+summary(m9)
+AIC(m9)
+summary(m10)
+AIC(m10)
+summary(m11)
+AIC(m11)
+summary(m12)
+AIC(m12)
+#The model 9 has the lowest AIC, so using grade is the best predictor.
+```
+(f)
+```{r}
+model3<-lm(log(price)~log(sqft_living)+bedrooms+bathrooms+waterfront+grade,data = training)
+#i
+# we should use stratification for model3 for the predictor waterfront, 
+#that is to say, compared to using dummy, the number of predictor decreases.
+#Hence, bias increases and variance decreases using stratification for waterfront.
+```
+ii
+```{r}
+plot(log(sqft_living), log(price))
+par(mfrow = c(1,2)) 
+plot(bedrooms, log(price))
+boxplot(price~bedrooms,xlab="bedrooms")
+plot(bathrooms, log(price))
+boxplot(price~bathrooms,xlab="bathrooms")
+plot(grade, log(price))
+boxplot(price~grade,xlab="grade")
+plot(waterfront, log(price))
+boxplot(price~waterfront,xlab="waterfront")
+#It looks like good to use the bedrooms, bathrooms, and grade, 
+#the forms makes sense as there are obviously relationship 
+#beween these predictors and log price, it might be possible to include
+#these variables in a different form and improve the performance 
+#but we need to try.
+```
+iii
+```{r}
+summary(model3)
+r_square2
+#The estimated results are shown above, 
+#the R-squared now is 0.5534 which is bigger than the R-squared of model 2
+```
+iv
+```{r}
+#Considering bias-variance trade-off, 
+#as model 2 has less predictors than model 3, 
+#it should have higher bias;
+#but also due to more predictors,
+#the variations of model3 should be larger than model 2, 
+#that is to say, model 3 has higher variance.
+
+```
+v
+```{r}
+#As MSE both consider Bias and Variance, we still use MSE
+#to compare the performance of these two models in predicting apartment prices:
+mse2 = mean((test$price - exp(predict(model2,test)))^2)
+mse3 = mean((test$price - exp(predict(model3,test)))^2)
+mse2
+mse3
+#So it can be found that model 3 has less MSE than model 2, 
+#it is better in performance of predicting apartment prices.
+```
+vi
+```{r}
+confint(model3, level = 0.9)
+```
+vii
+```{r}
+confint(model3, level = 1-(1-0.95)/2)[2:3, ]
+```
+(g)
+```{r}
+#We plot residuals in terms of different predictors.
+#if shows a non-random pattern for a specific predictor,
+#we will include it because in this situation we can believe 
+#that the added predictors still can explain error terms the 
+#previous predictors can not explain, so they can help reduce the errors 
+#and improve R-squared and performance of model.
+
+```
+(h)
+```{r}
+r<-log(price)-predict(model3)
+par(mfrow = c(1,2))
+plot(sqft_lot, r)
+boxplot(r~floors,xlab="floor")
+boxplot(r~view,xlab="view")
+boxplot(r~condition, xlab="condition")
+plot(yr_built,r)
+plot(lat,r)
+plot(long,r)
+boxplot(r~zipcode,xlab="zipcode")
+plot(training$sqft_above,r)
+plot(training$sqft_basement,r)
+plot(training$yr_renovated,r)
+plot(training$sqft_living15,r)
+plot(training$sqft_lot15,r)
+```
+i
+```{r}
+
+#my model is : log(Price) = beta0 + beta1*log(sqft_living) + beta2*bedrooms 
+#+ beta3*bathrooms +beta4*grade + beta5*waterfront 
+#+ beta6*yr_built + beta7*lat;
+#just as what is written in question (h)ii
+
+```
+ii
+```{r}
+model4 <- lm(log(price) ~ log(sqft_living) + bedrooms + bathrooms + grade + waterfront + yr_built + lat)
+summary(model4)
+#And the R-squared is 0.7507 now, it improved from model 3.
+
+```
+iii
+```{r}
+#Now we still use MSE to compare the performance 
+#of these two models in predicting apartment prices:
+mse4 = mean((test$price - exp(predict(model4,test)))^2)
+mse4
+#So it can be found that model 4 has less MSE than model 3, 
+#it is better in performance of predicting apartment prices.
+
+```
+
+(i)
+```{r}
+r2 <-  log(price) - predict(model3)
+par(mfrow = c(1,1))
+boxplot(r2 ~ zipcode)
+model5 <- lm(log(price) ~ log(sqft_living) + bedrooms + bathrooms + grade + waterfront + yr_built + lat + factor(zipcode))
+mse5 <- mean((test$price - exp(predict(model5,test)))^2)
+mse5
+
+```
+(j)
+```{r}
+
+
+```

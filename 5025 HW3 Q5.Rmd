@@ -1,0 +1,84 @@
+---
+title: "5205 HW3 Q5 clean-up"
+author: "Peiru Wu"
+date: "October 5, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+my solution is as following:
+(a)
+```{r}
+CPI <- read.csv("/Users/peiruwu/Downloads/cpiu-long.csv",header = T)
+class(CPI)
+summary(CPI)
+```
+(b)
+```{r}
+cpi.vec.ym <- CPI$X.2[!is.na(CPI$X.2)]
+length(cpi.vec.ym)
+year.month.vec <- CPI$X[!is.na(CPI$X.2)]
+length(year.month.vec)
+```
+(c)
+```{r}
+
+plot(year.month.vec,cpi.vec.ym)
+m<-length(cpi.vec.ym)
+year.month.vec
+
+cpi.vec<-c()
+year.vec<-c(1913:2016)
+
+for (i in 1913:2016){
+  cpi.temp<-c()
+  for(j in 1:m){
+    if (year.month.vec[j]==i){
+    cpi.temp<-append(cpi.temp,cpi.vec.ym[j])
+  }}
+    cpi.vec<-append(cpi.vec,mean(cpi.temp))
+}
+plot(year.vec,cpi.vec)
+```
+(d)
+```{r}
+cpi.vec.log<-log(cpi.vec)
+plot(year.vec,cpi.vec.log)
+##(we do not want inflation to raise because as inflation raises, the same amount of salary will value less.)
+summary(lm(cpi.vec.log~year.vec))
+## I suggest linear model.my beta0 is -6.123e+01 and my beta1 is 3.311e-02.
+abline(lm(cpi.vec.log~year.vec),year.vec)
+##I think the fit is good.year about 1975,2009 deviate a little bit more.
+```
+(e)
+```{r}
+predict(lm(cpi.vec.log~year.vec),data.frame(year.vec=c(2017,2026)))
+min.raise.2017<-100*(exp(5.545135)-cpi.vec[104])/cpi.vec[104]
+min.raise.2017    
+min.raise.2026<-100*(exp(5.843086)-cpi.vec[104])/cpi.vec[104]
+min.raise.2026   
+```
+(f)
+in 1929, the cpi is higher than we thought because of inflation bubble.the same as 2009. 
+(g)
+```{r}
+cpi.vec.log2<-cpi.vec.log[-c(1:28)]  # exclude the data poins of the year 1929 to 1940
+year.vec2<-year.vec[-c(1:28)]
+plot(year.vec2,cpi.vec.log2)
+summary(lm(cpi.vec.log2~year.vec2))
+abline(lm(cpi.vec.log2~year.vec2),year.vec2)
+
+predict(lm(cpi.vec.log2~year.vec2),data.frame(year.vec2=c(2017,2026)))
+min.raise2.2017<-100*(exp(5.75868)-cpi.vec[104])/cpi.vec[104]
+min.raise2.2017  
+min.raise2.2026<-100*(exp(6.11831)-cpi.vec[104])/cpi.vec[104]
+min.raise2.2026   
+
+
+

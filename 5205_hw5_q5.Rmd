@@ -1,0 +1,41 @@
+---
+title: "5205_hw5_q5"
+author: "Peiru Wu"
+date: "November 3, 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+set.seed(1)
+x1<-rep(1,500)
+x2<-matrix(rnorm(5000),nrow = 500)
+X<-cbind(x1,x2)
+e1<-rnorm(50)
+e2<-rnorm(450,sd=10)
+e<-c(e1,e2)
+var<-c(rep(1,50),rep(100,450))
+sigma<-diag(var)
+beta<-rep(1,11)
+Y<-X%*%beta+e
+#a
+Bmle<-solve(t(X)%*%solve(sigma)%*%X)%*%t(X)%*%solve(sigma)%*%Y
+Bmle
+#b
+Bols<-solve(t(X)%*%X)%*%t(X)%*%Y
+Bols
+#compare
+t(Bmle-beta)%*%(Bmle-beta)
+t(Bols-beta)%*%(Bols-beta)
+#mle is better here
+```
+

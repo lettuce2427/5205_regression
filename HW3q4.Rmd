@@ -1,0 +1,87 @@
+---
+title: "hw3 q4"
+author: "Peiru Wu"
+date: "3/2/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+#install.packages("e1071")
+library(e1071)
+train.5=read.table("/Users/peiruwu/Desktop/sml/hw3/train.5.txt",sep = ",")
+train.6=read.table("/Users/peiruwu/Desktop/sml/hw3/train.6.txt",sep = ",")
+train.5$y=-1
+train.6$y=1
+train.all=rbind(train.5,train.6)
+train.all$y=as.factor(train.all$y)
+```
+
+```{r}
+
+## 80% of the sample size
+smp_size <- floor(0.8 * nrow(train.all))
+
+## set the seed to make your partition reproductible
+
+train_ind <- sample(seq_len(nrow(train.all)), size = smp_size)
+
+train.56 <- train.all[train_ind, ]
+test.56 <- train.all[-train_ind, ]
+```
+
+```{r}
+svm.fit.linear.all <- tune(svm, y ~ ., data=train.56, kernel="linear",
+                           ranges=list(cost=c(0.001,0.01,0.1,1)),scale=F)
+svm.fit.linear.all
+svm.fit.linear <- svm.fit.linear.all$best.model
+
+
+t1=table(true=test.56[,"y"],pred=predict(svm.fit.linear,test.56))
+error.linear=(t1[1,2]+t1[2,1])/nrow(test.56)
+error.linear
+```
+
+
+
+```{r}
+# Plot the cross-validation estimates of the misclassification rate. Please plot the rate as
+#(a) a function of the margin parameter in the linear case.
+#(b) a function of the margin parameter and the kernel bandwidth in the non-linear case (you are encouraged to use heat map here).
+
+
+plot(x=c(0.001,0.01,0.1,1),y=svm.fit.linear.all$performances[,2])
+
+
+```
+
+
+```{r}
+rbf.all <- tune(svm,y ~., data=train.56, 
+                 kernel='radial', 
+                 ranges=list(cost=c(0.001,0.01,0.1,1),
+                 gamma=c(0.01,0.1,1,10)),scale=F)
+
+
+svm.fit.rbf=rbf.all$best.model
+t2=table(true=test.56[,"y"],pred=predict(svm.fit.rbf,test.56))
+t2
+error.nolinear=(t2[1,2]+t2[2,1])/nrow(test.56)
+error.nolinear
+## we should choose a nonlinear one
+```
+
+
+```{r}
+m1=matrix(rbf.all$performances[,3],nrow = 4,ncol = 4)
+image(x=c(0.001,0.01,0.1,1),y=c(0.5, 1,2,3),z=m1)
+```
